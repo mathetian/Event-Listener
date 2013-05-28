@@ -1,0 +1,119 @@
+<html>
+<head>
+	<script src="http://code.jquery.com/jquery-1.9.1.min.js"></script>
+	<script>
+		function Main1(){
+			console.log('onclick-event');
+		}
+		function Main2(){
+			console.log('onmouseover-event');
+		}
+		function Main3(){
+			console.log('jquery-click-event');
+		}
+		function Main4(){
+			console.log('jquery-mouseover-event');
+		}
+		function Main5(){
+			console.log('attach-click-event');
+		}
+		function Main6(){
+			console.log('attach-mouseover-event');
+		}
+	</script>
+<script>
+	(function(window, document){	
+		if(HTMLElement.prototype.addEventListener)
+		{
+			//for chrome,firefox or others
+			HTMLElement.prototype.realAddEventListener = HTMLElement.prototype.addEventListener;
+			HTMLElement.prototype.addEventListener = function(a,b,c){
+				this.realAddEventListener(a,(function(b){
+							return function(e){
+								var data={
+				        			"node": e.target,
+				        			"listeners": [ {
+				        			"type": a,
+				        			"func":b.toString(),
+				        			"source": 'NOT DOM 0 event'
+				       			}]}; 
+				    			console.log(data);
+							}
+						})(b),c);
+				this.realAddEventListener(a,b,c);
+			};
+		}
+		else
+		{
+			//for low versions of ie
+			HTMLElement.prototype.realAddEventListener = HTMLElement.prototype.attachevent;
+			HTMLElement.prototype.attachevent = function(a,b,c){
+				this.realAddEventListener(a,(function(b){
+							var func=b.toString();
+							return function(e){
+								var data={
+				        			"node": e.target,
+				        			"listeners": [ {
+				        			"type": e.type,
+				        			"func":func,
+				        			"source": 'NOT DOM 0 event'
+				       			}]}; 
+				    			console.log(data);
+							}
+						})(b),c);
+				this.realAddEventListener(a,b,c);
+			};
+		}
+	})(window, document);
+</script>
+</head>
+<body>
+<div id="d1" onclick="Main1()"><a href='#'>onclick-event</a></div>
+<div id="d2" onmouseover="Main2()"><a href='#'>onmouseover-event</a></div>
+<div id="d3"><a href='#'>jquery-click-event</a></div>
+<div id="d4"><a href='#'>jquery-mouseover-event</a></div>
+<div id="d5"><a href='#'>attach-click-event</a></div>
+<div id="d6"><a href='#'>attach-mouseover-event</a></div>
+<script>
+	var ele=document.getElementById('d5');
+	ele.addEventListener('click',Main5);
+	ele=document.getElementById('d6');
+	ele.addEventListener('mouseover',Main6);
+
+	$('#d3').bind('click',Main3);
+	$('#d4').bind('mouseover',Main4);
+</script>
+<script>
+	(function(window, document){
+	    var n,
+	        all = document.getElementsByTagName('*'),
+	        types = [ 'click', 'dblclick', 'mousedown', 'mousemove', 'mouseout', 'mouseover', 
+	            'mouseup', 'change', 'focus', 'blur', 'scroll', 'select', 'submit', 'keydown', 'keypress', 
+	            'keyup', 'load', 'unload' ],
+	        i, iLen, j, jLen = types.length;
+	    for ( i=0, iLen=all.length ; i<iLen ; i++ ) {
+	        for ( j=0 ; j<jLen ; j++ ) {
+	            if ( typeof all[i]['on'+types[j]] == 'function' ) {   
+	                    var fn = all[i]['on'+types[j]];
+	                    //closure
+	                    all[i]['on'+types[j]] =(function() {
+	                    	var a={
+		                        "node": all[i],
+		                        "listeners": [ {
+		                        "type": types[j],
+		                        "func": all[i]['on'+types[j]].toString(),
+		                        "removed": false,
+		                        "source": 'DOM 0 event'
+	                    	}]};
+	                    	return function(e){
+	                    		console.log(a);
+	                    		var res = fn.apply(this, arguments);
+	                        	return res;
+	                        }
+	                    })();
+	                }
+	            }
+	        }
+	})(window, document);
+</script>
+</body>

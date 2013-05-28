@@ -1,0 +1,172 @@
+<html>
+<head>
+	<script>
+		function Main1(){
+			console.log('onclick-event');
+		}
+		function Main3(){
+			console.log('jquery-click-event');
+		}
+		function Main5(){
+			console.log('attach-click-event');
+		}
+		function Main7(){
+			console.log('glow-click-event');
+		}
+		function Main9(){
+			console.log('mootools-click-event');
+		}
+		function Main11(){
+			console.log('yui2-click-event');
+		}
+		function Main13(){
+			console.log('extjs-click-event');
+		}
+		function Main15() {
+			console.log('prototype-click-event');
+		}
+	</script>
+	<script src="http://code.jquery.com/jquery-1.9.1.min.js"></script>
+	<script>jQuery.noConflict();</script>
+	<script type="text/javascript" src="glow.js"></script>
+	<script type="text/javascript" src="build/yuiloader/yuiloader-min.js"></script>
+	<script type="text/javascript" src="build/event/event-debug.js"></script>
+	<script type="text/javascript" src="ext-all.js"></script>
+	<script type="text/javascript" src="mootools-core-1.4-full.js"></script>
+	<script type="text/javascript" src="prototype-1.6.0.3.js"></script>
+	<script>
+	(function(window, document){
+		if(HTMLElement.prototype.addEventListener)
+		{
+			HTMLElement.prototype.realAddEventListener = HTMLElement.prototype.addEventListener;
+			HTMLElement.prototype.addEventListener = function(a,b,c){
+				this.realAddEventListener(a,(function(b){
+							var func=b.toString();
+							return function(e){
+								var data={
+				        			"node": e.currentTarget,
+				        			"listeners": [ {
+				        			"type": e.type,
+				        			"func":func,
+				        			"source": 'NOT DOM 0 event'
+				       			}]}; 
+				    			console.log(data);
+							}
+						})(b),c);
+				this.realAddEventListener(a,b,c);
+			};
+		}
+		else
+		{
+			HTMLElement.prototype.realAddEventListener = HTMLElement.prototype.attachevent;
+			HTMLElement.prototype.attachevent = function(a,b,c){
+				this.realAddEventListener(a,(function(b){
+							var func=b.toString();
+							return function(e){
+								var data={
+				        			"node": e.target,
+				        			"listeners": [ {
+				        			"type": e.type,
+				        			"func":func,
+				        			"source": 'NOT DOM 0 event'
+				       			}]}; 
+				    			console.log(data);
+							}
+						})(b),c);
+				this.realAddEventListener(a,b,c);
+			};
+		}	
+	})(window, document);
+</script>
+</head>
+<body>
+<div id="d1" onclick="Main1()"><a href='#'>onclick-event</a></div>
+<div id="d2" onclick="javascript:console.log('on-click-an')"><a href="#">onclick-annoy</a></div>
+
+<div id="d3"><a href='#'>jquery-click-event</a></div>
+<div id="d4"><a href='#'>jquery-click-annoy</a></div>
+
+<div id="d5"><a href='#'>attach-click-event</a></div>
+<div id="d6"><a href='#'>attach-click-annoy</a></div>
+
+<div id="d7"><a href='#'>glow-click-event</a></div>
+<div id="d8"><a href='#'>glow-click-annoy</a></div>
+
+<div id="d9"><a href='#'>mootools-click-event</a></div>
+<div id="d10"><a href='#'>mootools-click-annoy</a></div>
+
+<div id="d11"><a href='#'>yui2-click-event</a></div>
+<div id="d12"><a href='#'>yui2-click-annoy</a></div>
+
+<div id="d13"><a href='#'>extjs-click-event</a></div>
+<div id="d14"><a href='#'>extjs-click-annoy</a></div>
+
+<div id="d15"><a href='#'>prototype-click-event</a></div>
+<div id="d16"><a href='#'>prototype-click-annoy</a></div>
+<script>
+	jQuery('#d3').bind('click',Main3);
+	jQuery('#d4').bind('click',function(){console.log('jquery-click-annoy');});
+
+	var ele=document.getElementById('d5');
+	ele.addEventListener('click',Main5);
+
+	ele=document.getElementById('d6');
+	ele.addEventListener('click',function(){console.log('attach-click-annoy');});
+
+	glow.events.addListener('#d7','click',Main7);
+	glow.events.addListener('#d8','click',function(){console.log('glow-click-annoy')});
+
+	ele=document.getElementById('d9');
+	$(ele).addEvent('click', Main9);
+	ele=document.getElementById('d10');
+	$(ele).addEvent('click', function(){console.log('mootools-click-annoy')});
+
+	ele=document.getElementById('d11');
+	YAHOO.util.Event.addListener(ele, "click", Main11);
+	ele=document.getElementById('d12');
+	YAHOO.util.Event.addListener(ele,"click",function(){console.log('yui2-click-annoy');}); 
+
+	ele=document.getElementById('d13');
+	Ext.EventManager.addListener(ele, "click", Main13);
+	ele=document.getElementById('d14');
+	Ext.EventManager.addListener(ele,"click",function(){console.log('extjs-click-annoy');});
+
+	ele=document.getElementById('d15');
+	ele.observe('click',Main15);
+	ele=document.getElementById('d16');
+	ele.observe('click',function(){console.log('prototype-click-annoy');});
+</script>
+<script>
+	(function(window, document){
+	    var n,
+	        all = document.getElementsByTagName('*'),
+	        types = [ 'click', 'dblclick', 'mousedown', 'mousemove', 'mouseout', 'mouseover', 
+	            'mouseup', 'change', 'focus', 'blur', 'scroll', 'select', 'submit', 'keydown', 'keypress', 
+	            'keyup', 'load', 'unload' ],
+	        i, iLen, j, jLen = types.length;
+	    var num=0;
+	    for ( i=0, iLen=all.length ; i<iLen ; i++ ) {
+	        for ( j=0 ; j<jLen ; j++ ) {
+	            if ( typeof all[i]['on'+types[j]] == 'function' ) {
+	                    all[i]['on'+types[j]] = (function() {
+	                    var a={
+	                        "node": all[i],
+	                        "listeners": [ {
+	                        "type": types[j],
+	                        "func": all[i]['on'+types[j]].toString(),
+	                        "removed": false,
+	                        "source": 'DOM 0 event'
+	                    }]}; 
+	                    var fn = all[i]['on'+types[j]];
+	                    return function(){
+	                        console.log(a);
+	                        var res = fn.apply(this, arguments);
+	                        return res;
+	                    }
+	                   })();
+	                }
+	            }
+	        }
+	})(window, document);
+</script>
+</body>
